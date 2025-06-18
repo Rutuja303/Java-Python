@@ -22,63 +22,63 @@ class TwilioNumber(AuditableBaseModel, table=True):
     __tablename__ = 'twilio_number'
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    phone_number: Optional[str] = Field(default=None, max_length=13, unique=True)
-    forwarded_number: Optional[str] = Field(default=None, max_length=13)
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    is_deleted: bool = Field(default=False)
-    is_forwarded: bool = Field(default=False)
-    is_room_associated: bool = Field(default=False)
-    is_support_number: bool = Field(default=False)
-    voicemail_s3_key: Optional[str] = Field(default=None)
-    is_voice_mail_enabled: bool = Field(default=False)
-    
+    phoneNumber: Optional[str] = Field(default=None, max_length=13, unique=True, alias="phone_number")
+    forwardedNumber: Optional[str] = Field(default=None, max_length=13, alias="forwarded_number")
+    user: Optional[int] = Field(default=None, foreign_key="user.id")
+    isDeleted: bool = Field(default=False, alias="is_deleted")
+    isForwarded: bool = Field(default=False, alias="is_forwarded")
+    isRoomAssociated: bool = Field(default=False, alias="is_room_associated")
+    isSupportNumber: bool = Field(default=False, alias="is_support_number")
+    voicemailS3Key: Optional[str] = Field(default=None, alias="voicemail_s3_key")
+    isVoiceMailEnabled: bool = Field(default=False, alias="is_voice_mail_enabled")
+
     # Relationships
-    user: Optional["User"] = Relationship(back_populates="twilio_numbers")
-    twilio_number_usage: Optional["TwilioNumberUsage"] = Relationship(back_populates="twilio_number")
+    user: Optional["User"] = Relationship(back_populates="twilioNumbers")
+    twilioNumberUsage: Optional["TwilioNumberUsage"] = Relationship(back_populates="twilioNumber")
     room: Optional["Room"] = Relationship(back_populates="moderator")
-    redirect: Optional["CallRedirect"] = Relationship(back_populates="call_to")
-    call_level_set: Set["CallLevel"] = Relationship(back_populates="twilio_numbers", link_table="call_level_twilio_number")
+    redirect: Optional["CallRedirect"] = Relationship(back_populates="callTo")
+    callLevelSet: Set["CallLevel"] = Relationship(back_populates="twilioNumbers", link_table="callLevelTwilioNumber")
     
     def disable_voice_mail(self) -> None:
         """Disable voicemail and clear S3 key"""
-        self.is_voice_mail_enabled = False
-        self.voicemail_s3_key = None
-    
+        self.isVoiceMailEnabled = False
+        self.voicemailS3Key = None
+
     def enable_voice_mail(self, s3_key: str) -> None:
         """Enable voicemail with S3 key"""
-        self.is_voice_mail_enabled = True
-        self.voicemail_s3_key = s3_key
-    
+        self.isVoiceMailEnabled = True
+        self.voicemailS3Key = s3_key
+
     def update_forwarding(self, forward_dto: TwilioForwardDto) -> None:
         """Update forwarding settings based on DTO"""
         if forward_dto.forward_to and is_phone_number(forward_dto.forward_to):
-            self.forwarded_number = forward_dto.forward_to
-            self.is_forwarded = forward_dto.is_enabled
+            self.forwardedNumber = forward_dto.forward_to
+            self.isForwarded = forward_dto.is_enabled
         else:
-            self.forwarded_number = None
-            self.is_forwarded = False
-    
+            self.forwardedNumber = None
+            self.isForwarded = False
+
     def to_dto(self, exclude_actor_data: bool = False) -> TwilioNumberDto:
         """Convert to DTO"""
         return TwilioNumberDto(
             id=self.id,
-            phone_number=self.phone_number,
-            forwarded_number=self.forwarded_number,
-            is_forwarded=self.is_forwarded,
-            active_association=self._get_active_association(),
+            phoneNumber=self.phoneNumber,
+            forwardedNumber=self.forwardedNumber,
+            isForwarded=self.isForwarded,
+            activeAssociation=self._get_active_association(),
             actor=self._get_actor(exclude_actor_data),
-            last_usage_report=self.twilio_number_usage.to_dto() if self.twilio_number_usage else None,
-            is_voice_mail_enabled=self.is_voice_mail_enabled
+            lastUsageReport=self.twilioNumberUsage.to_dto() if self.twilioNumberUsage else None,
+            isVoiceMailEnabled=self.isVoiceMailEnabled
         )
     
     def _get_active_association(self) -> ActiveAssociation:
         """Get the active association type"""
         if not self._is_assigned():
             return ActiveAssociation.NONE
-        
-        if self.is_room_associated:
+
+        if self.isRoomAssociated:
             return ActiveAssociation.CONFERENCE
-        elif self.is_support_number:
+        elif self.isSupportNumber:
             return ActiveAssociation.SUPPORT
         else:
             return ActiveAssociation.USER

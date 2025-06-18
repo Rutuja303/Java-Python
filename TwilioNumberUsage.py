@@ -10,18 +10,18 @@ class TwilioNumberUsage(SQLModel, table=True):
     __tablename__ = 'twilio_number_usage'
     
     id: Optional[int] = Field(default=None, primary_key=True)
-    owner_name: Optional[str] = Field(default=None)
-    twilio_number_id: Optional[int] = Field(default=None, foreign_key="twilio_number.id")
-    last_incoming_call_date: Optional[datetime] = Field(default=None)
-    last_outgoing_call_date: Optional[datetime] = Field(default=None)
-    last_incoming_sms_date: Optional[datetime] = Field(default=None)
-    last_outgoing_sms_date: Optional[datetime] = Field(default=None)
-    last_used_more_than_15_days: Optional[bool] = Field(default=None)
-    last_used_more_than_30_days: Optional[bool] = Field(default=None)
-    last_used_more_than_60_days: Optional[bool] = Field(default=None)
-    
+    ownerName: Optional[str] = Field(default=None, alias="owner_name")
+    twilioNumber: Optional[int] = Field(default=None, foreign_key="twilio_number.id")
+    lastIncomingCallDate: Optional[datetime] = Field(default=None, alias="last_incoming_call_date")
+    lastOutgoingCallDate: Optional[datetime] = Field(default=None, alias="last_outgoing_call_date")
+    lastIncomingSmsDate: Optional[datetime] = Field(default=None, alias="last_incoming_sms_date")
+    lastOutgoingSmsDate: Optional[datetime] = Field(default=None, alias="last_outgoing_sms_date")
+    lastUsedMoreThan15Days: Optional[bool] = Field(default=None, alias="last_used_more_than_15_days")
+    lastUsedMoreThan30Days: Optional[bool] = Field(default=None, alias="last_used_more_than_30_days")
+    lastUsedMoreThan60Days: Optional[bool] = Field(default=None, alias="last_used_more_than_60_days")
+
     # Relationship
-    twilio_number: Optional["TwilioNumber"] = Relationship(back_populates="twilio_number_usage")
+    twilioNumber: Optional["TwilioNumber"] = Relationship(back_populates="twilioNumberUsage")
     
     def to_dto(self) -> TwilioNumberUsageDto:
         """Convert to DTO"""
