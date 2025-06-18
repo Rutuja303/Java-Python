@@ -9,31 +9,31 @@ class Voicemail(SQLModel, table=True):
     __tablename__ = "voicemail"
 
     id: str = Field(primary_key=True, index=True)
-    date_created: Optional[datetime] = None
-    media_url: Optional[str] = None
-    from_number: Optional[str] = None
-    to_number: Optional[str] = None
-    duration: Optional[str] = None
-    status: Optional[str] = None
-    call_sid: Optional[str] = None
-    transcription_sid: Optional[str] = None
+    dateCreated: Optional[datetime] = None
+    mediaUrl: Optional[str] = Field(default=None, alias="media_url")
+    fromNumber: Optional[str] = Field(default=None, alias="from_number")
+    toNumber: Optional[str] = Field(default=None, alias="to_number")
+    duration: Optional[str] = Field(default=None, alias="duration")
+    status: Optional[str] = Field(default=None, alias="status")
+    callSid: Optional[str] = Field(default=None, alias="call_sid")
+    transcriptionSid: Optional[str] = Field(default=None, alias="transcription_sid")
 
-    should_post_on_slack: bool = Field(default=False)
-    has_posted_on_slack: bool = Field(default=False)
+    shouldPostOnSlack: bool = Field(default=False, alias="should_post_on_slack")
+    hasPostedOnSlack: bool = Field(default=False, alias="has_posted_on_slack")
 
     def to_dto(self) -> VoicemailDTO:
         return VoicemailDTO(
             id=self.id,
-            media_url=self.media_url,
-            is_transcript_available=bool(self.transcription_sid),
-            date_created=self.date_created,
-            from_number=self.from_number,
+            media_url=self.mediaUrl,
+            is_transcript_available=bool(self.transcriptionSid),
+            date_created=self.dateCreated,
+            from_number=self.fromNumber,
             duration=convert_ms(int(self.duration)) if self.duration else None,
         )
 
     def to_slack_message_dict(self) -> dict:
         return {
-            "voicemail_url": self.media_url,
-            "caller": self.from_number,
-            "callee": self.to_number,
+            "voicemail_url": self.mediaUrl,
+            "caller": self.fromNumber,
+            "callee": self.toNumber,
         }
