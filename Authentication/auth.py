@@ -55,7 +55,7 @@ def create_access_token(data: dict, expires_delta: timedelta):
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-# 🔐 Signup
+# Signup
 @router.post("/signup", response_model=UserOut)
 def signup(user: UserCreate, db: Session = Depends(get_db)):
     existing_user = db.query(Users).filter(Users.username == user.username).first()
@@ -69,7 +69,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
-# 🔐 Login
+# Login
 @router.post("/login", response_model=Token)
 def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     user = db.query(Users).filter(Users.username == form_data.username).first()
@@ -84,7 +84,7 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
 
     return {"access_token": access_token, "token_type": "bearer"}
 
-# 🔐 Get current user from token
+# Get current user from token
 def get_current_user(token: str = Depends(oauth2_bearer), db: Session = Depends(get_db)) -> Users:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -105,12 +105,12 @@ def get_current_user(token: str = Depends(oauth2_bearer), db: Session = Depends(
         raise credentials_exception
     return user
 
-# 🔐 Get current user endpoin
+# Get current user endpoin
 @router.get("/users/me", response_model=UserOut)
 def read_users_me(current_user: Users = Depends(get_current_user)):
     return current_user
 
-# 🔐 Get all users endpoin
+# Get all users endpoin
 @router.get("/users", response_model=list[UserOut])
 def read_users(db: Session = Depends(get_db)):
     users = db.query(Users).all()
